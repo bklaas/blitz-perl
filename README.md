@@ -15,24 +15,29 @@ Now
  
 **In your Perl**
 ```Perl
+
     use Blitz;
 
     my $blitz = Blitz->new();
+
 ```
 
 **Sprint**
 
 ```Perl
+
 $blitz->sprint({
     url => 'www.mycoolapp.com',
     region => 'california',
     callback => \&sprint_sink($ok, $err)
 });
+
 ```
 
 **Rush**
 
 ```Perl
+
 $blitz->rush({
     url => 'www.mycoolapp.com',
     region => 'california',
@@ -44,4 +49,5 @@ $blitz->rush({
         }],
         callback => \&rush_sink($ok, $err)
 });
+
 ```
