@@ -20,7 +20,6 @@ Now
     my $blitz = Blitz->new();
 ```
 
-then:
 **Sprint**
 
 ```Perl
@@ -31,7 +30,6 @@ $blitz->sprint({
 });
 ```
 
-or:
 **Rush**
 
 ```Perl
