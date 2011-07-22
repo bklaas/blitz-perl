@@ -14,7 +14,7 @@ Now
     cpan Blitz
  
 **In your Perl**
-```perl
+```Perl
     use Blitz;
 
     my $blitz = Blitz->new();
@@ -22,17 +22,18 @@ Now
 then:
 **Sprint**
 
-```perl
+```Perl
 $blitz->sprint({
     url => 'www.mycoolapp.com',
     region => 'california',
     callback => \&sprint_sink($ok, $err)
 });
-
 ```
+
 or:
 **Rush**
-```perl
+
+```Perl
 $blitz->rush({
     url => 'www.mycoolapp.com',
     region => 'california',
