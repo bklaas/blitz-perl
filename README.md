@@ -19,6 +19,7 @@ Now
 
     my $blitz = Blitz->new();
 ```
+
 then:
 **Sprint**
 
