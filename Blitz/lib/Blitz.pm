@@ -27,42 +27,55 @@ More information on blitz can be found at http://blitz.io
 
     my $blitz = Blitz->new();
 
+=cut
+
+sub new {
+    my $this = shift;
+    my $self = {
+    };
+    bless $self;
+    return $self;
+}
+
 =head1 SUBROUTINES/METHODS
+
 
 =head2 sprint
 
 # Sprint
 $blitz->sprint({
-	url => 'www.mycoolapp.com',
-	region => 'california',
-	callback => \&sprint_sink($ok, $err)
+    url => 'www.mycoolapp.com',
+    region => 'california',
+    callback => \&sprint_sink($ok, $err)
 });
 
 
 =cut
 
 sub sprint {
+    my $self = shift;
 }
 
 =head2 rush
 
 # Rush
 $blitz->rush({
-	url => 'www.mycoolapp.com',
-	region => 'california',
-	pattern => [
-		{
-			start => 1,
-			end => 100,
-			duration => 60,
-		}],
-	callback => \&rush_sink($ok, $err)
+    url => 'www.mycoolapp.com',
+    region => 'california',
+    pattern => [
+        {
+            start => 1,
+            end => 100,
+            duration => 60,
+        }],
+    callback => \&rush_sink($ok, $err)
 });
 
 
 =cut
 
 sub rush {
+    my $self = shift;
 }
 
 =head1 AUTHOR
