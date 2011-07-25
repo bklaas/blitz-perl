@@ -14,6 +14,8 @@ WriteMakefile(
     PREREQ_PM => {
         'Test::More' => 0,
         'JSON::XS'  => '2.3',
+        'MIME::Base64' => 0,
+        'LWP' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Blitz-*' },
