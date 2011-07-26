@@ -51,7 +51,7 @@ sub new {
         credentials => {
             username => $this->{username},
             api_key   => $this->{api_key},
-            host     => $this->{host} || 'blitz.io',
+            host     => $this->{host} || 'blitz.io/login/api',
             port     => $this->{port} || 80,
         }
     };

@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 1;
+use Test::More skip_all => 'TODO- deal with POD coverage at the end';
 
 # Ensure a recent version of Test::Pod::Coverage
 my $min_tpc = 1.08;
@@ -15,8 +15,4 @@ eval "use Pod::Coverage $min_pc";
 plan skip_all => "Pod::Coverage $min_pc required for testing POD coverage"
     if $@;
 
-TODO: {
-    local $TODO = "Deal with POD coverage at the end\n";
-    is( 1, 0, "Deal with POD coverage later");
-    #all_pod_coverage_ok();
-}
+all_pod_coverage_ok();
