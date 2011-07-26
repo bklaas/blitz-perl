@@ -130,8 +130,6 @@ sub abort {
     my $job_id = shift;
     my $closure = shift;
     
-    # Create a user agent object
-    use LWP::UserAgent;
     my $browser = LWP::UserAgent->new;
     
     my $path = '/api/1/jobs/' . $job_id . '/abort';
