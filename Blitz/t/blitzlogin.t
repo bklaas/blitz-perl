@@ -17,7 +17,7 @@ my $blitz = Blitz->new({
 my $client = Blitz::API->client($blitz->{credentials});
 my $expected = {
     login => {
-        success => "{\"api_key\":\"9fbc5302-6002bea0-d38f8ace-0285a4ec\",\"ok\":true}",
+        success => "{\"api_key\":\"34343434-abcabcab-99999999-abacab12\",\"ok\":true}",
         fail    => "{\"reason\":\"authentication failed\",\"error\":\"login\"}",
     },
     execute => {
