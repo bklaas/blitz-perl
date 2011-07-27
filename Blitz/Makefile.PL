@@ -16,6 +16,7 @@ WriteMakefile(
         'JSON::XS'  => '2.3',
         'MIME::Base64' => 0,
         'LWP' => 0,
+        'Regexp::Common' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Blitz-*' },

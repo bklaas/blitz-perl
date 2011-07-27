@@ -51,7 +51,7 @@ sub new {
         credentials => {
             username => $this->{username},
             api_key   => $this->{api_key},
-            host     => $this->{host} || 'blitz.io/login/api',
+            host     => $this->{host} || 'blitz.io',
             port     => $this->{port} || 80,
         }
     };
@@ -169,7 +169,7 @@ sub _run {
     my ($self, $obj, $options, $callback) = @_;
     if ($self->{_authenticated}) {
         $obj->new(
-                $self,
+                $self->{credentials},
                 $options,
                 $callback
             )->execute();
@@ -184,7 +184,7 @@ sub _run {
                     $self->{_authenticated} = 1;
                     $self->{credentials}{api_key} = $result->{api_key};
                     $obj->new(
-                        $self, 
+                        $self->{credentials},
                         $options, 
                         $callback
                         )->execute();

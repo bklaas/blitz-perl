@@ -2,11 +2,138 @@ package Blitz::Validate;
 
 use strict;
 use warnings;
+use Regexp::Common qw/URI/;
 
 =head1 NAME
 
 Blitz::Validate - Perl module for assisting with the validation of calls to Blitz.io
 
 =cut
+
+sub validate {
+    my $options = shift;
+    my $reasons = [];
+
+    # url
+    if (!$options->{url}) {
+        push @$reasons, "No URL given";
+    }
+    elsif (! _is_url($options->{url}) ) {
+        push @$reasons, "Invalid URL: $options->{url}";
+    }
+
+    # pattern
+    if ($options->{pattern}) {
+        if (!$options->{pattern}{iterations} || ! _is_integer($options->{pattern}{iterations}) ) {
+            push @$reasons, "Pattern iterations not given or not an integer";
+        }
+        if (! $options->{pattern}{intervals} || ! _is_array($options->{pattern}{intervals}) ) {
+            push @$reasons, "Intervals is not an array";
+        }
+    }
+
+    # region
+    if ($options->{region} && $options->{region} !~ /(california|virginia|ireland|singapore|japan)/) {
+
+        push @$reasons, "Invalid region: $options->{region}";
+    }
+
+    # ssl
+    if ($options->{ssl} && !
+        ( $options->{ssl} eq 'tlsv1' || 
+          $options->{ssl} eq 'sslv2' ||
+          $options->{ssl} eq 'sslv3' ) 
+          ){
+        push @$reasons, "SSL needs to be one of the following: tlsv1, sslv2, or sslv3";
+    }
+    
+    # data
+    if ($options->{content}) {
+        if (! _is_hash($options->{content})) {
+            push @$reasons, "Content must be a hash";
+        }
+        elsif ( ! $options->{content}{data} || ! _is_array($options->{content}{data}) ) {
+             push @$reasons, "Content hash must have a data key with an array value"; 
+        }
+    }
+
+    # referer
+    if ($options->{referer} && ! _is_url($options->{referer} )) {
+        push @$reasons, "Invalid referer URL: " . $options->{referer};
+    }
+    # string params
+    for my $key ('user-agent', 'user') {
+        if ($options->{$key} && 
+            ( _is_array($options->{$key}) || 
+              _is_hash($options->{$key}) ) 
+            ) {
+                push @$reasons, "Invalid " . $key . ": " . "$options->{$key}";
+        }
+    }
+    
+    # integer params
+    for my $key ('status', 'timeout') {
+        if ($options->{$key} && $options->{$key} !~ /^\d+$/g) {
+            push @$reasons, "Invalid " . $key . ": " . "$options->{$key}";
+        }
+    }
+    
+    # array params
+    for my $key ('cookies', 'headers') {
+        if ($options->{$key} && ! _is_array($options->{$key})) {
+            push @$reasons, "values to $key not given as an array: " . $options->{$key};
+        }
+    }
+    
+    # XXX: request
+    
+    # XXX: variables
+    # variables must be a hash
+    # key/val pairs of hash must be name, followed by a hash of params
+    # each params hash must have a type key, with the value being one of "list|alpha|number|udid"
+    # if list, must have an entries key with a value of an array
+    # if alpha, must have keys min and max, with integer values
+    # if number, must have keys min and max, with integer values
+    
+    if ($reasons->[0]) {
+        my $reason = join(', ', @$reasons);
+        return (0, { error => 'Invalid parameters', reason => $reason });
+    }
+    else {
+        return (1, {});
+    }
+}
+
+sub _is_integer {
+    my $val = shift;
+    if ($val && $val =~ /^\d+$/g) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+sub _is_foo {
+    my ($val, $type) = @_;
+    if ( ref($val) =~ $type) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+sub _is_array {
+    return _is_foo($_[0], 'ARRAY');
+}
+
+sub _is_hash {
+    return _is_foo($_[0], 'HASH');
+}
+
+sub _is_url {
+    my $url = shift;
+    return $url =~ /$RE{URI}{HTTP}{ -scheme => 'https?' }/g;
+}
 
 return 1;

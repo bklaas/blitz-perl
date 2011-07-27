@@ -23,7 +23,7 @@ sub create_object_ok {
 sub test_defaults {
     is( $obj->username, undef, "If not given, username initially unset");
     is( $obj->api_key, undef, "If not given, api_key initially unset");
-    is( $obj->host, 'blitz.io/login/api', 'Default host correct');
+    is( $obj->host, 'blitz.io', 'Default host correct');
     is( $obj->port, 80, 'Default port correct');
 }
 

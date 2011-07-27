@@ -16,3 +16,4 @@ t/pod-coverage.t
 t/pod.t
 t/blitzobject.t
 t/blitzlogin.t
+t/blitzvalidate.t

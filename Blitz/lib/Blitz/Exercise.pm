@@ -41,23 +41,54 @@ Create a blitz exercise object, which returns a closure with execute and abort m
 =cut
 
 sub new {
-    my ($name, $options, $callback) = @_;
+    my ($name, $creds, $options, $callback) = @_;
     # convenience vars
     my $self = {
+        credentials => $creds,
         options => $options,
+        callback => $callback,
     };
 
-    my $closure = sub {
-        sub execute {
-            print "EXECUTE!\n";
-        }
-        sub abort {
-            print "ABORT!\n";
-        }
-    };
-    bless $closure;
-    return $closure;
+    bless $self;
+    return $self;
+
+#    my $closure = sub {
+#        sub execute {
+#            Data::Dump::dump(@_);
+#            my $self = shift;
+#            my $result = shift;
+#            print "EXECUTE!\n";
+#            &$callback($self, $result);
+#        }
+#        sub abort {
+#            print "ABORT!\n";
+#        }
+#    };
+#    bless $closure;
+#   return $closure;
 
 }
+
+sub execute {
+    my $self = shift;
+    
+    my ($valid, $result) = Blitz::Validate::validate($self->{options});
+    
+    if (!$valid) {
+#        Data::Dump::dump($self);
+        &{$self->{callback}}($result, $result->{error});
+    }
+    else {
+        
+    }
+    return $self;
+}
+
+sub abort {
+    my $self = shift;
+    &{$self->{callback}}($self->{credentials});
+    return $self;
+}
+
 
 return 1;
