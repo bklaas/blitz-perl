@@ -151,6 +151,20 @@ sub authenticated {
     return $self->{_authenticated};
 }
 
+=head2 client
+
+# creates a Blitz::API->client object
+
+    my $client = $blitz->client;
+    
+=cut
+
+sub client {
+    my $self = shift;
+    my $client = Blitz::API->client($self->{credentials});
+    return $client;
+}
+
 sub _run {
     my ($self, $obj, $options, $callback) = @_;
     if ($self->{_authenticated}) {
@@ -161,7 +175,7 @@ sub _run {
             )->execute();
     }
     else {
-        my $client = Blitz::API->client($self->{credentials});
+        my $client = $self->client;
         $client->login(
             sub { 
                 my $self = shift;

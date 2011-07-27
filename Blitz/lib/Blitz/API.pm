@@ -51,7 +51,7 @@ sub _decode_response {
     my $self = shift;
     my $response = shift;
     my $result = {};
-    if ( $response->code() != 200 ) {
+    if ( $response->{_rc} != 200 ) {
         $result->{error} = 'server';
         $result->{cause} = $response->code();
     }
@@ -117,7 +117,7 @@ sub execute {
         Content          => $data,
     );
 
-    my $result = _decode_response($response->{_content});
+    my $result = _decode_response($self, $response);
 
     if ($closure) {
         &$closure($self, $result);

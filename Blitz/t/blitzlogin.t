@@ -6,7 +6,7 @@ use Blitz;
 use Blitz::API;
 use JSON::XS;
 
-use Test::More tests => 6;
+use Test::More tests => 10;
 use Test::MockObject;
 
 my $blitz = Blitz->new({ 
@@ -15,37 +15,52 @@ my $blitz = Blitz->new({
 });
 
 my $client = Blitz::API->client($blitz->{credentials});
-my $success = "{\"api_key\":\"9fbc5302-6002bea0-d38f8ace-0285a4ec\",\"ok\":true}";
-my $fail = "{\"reason\":\"authentication failed\",\"error\":\"login\"}";
-my $success_hash = decode_json($success);
-my $fail_hash = decode_json($fail);
+my $expected = {
+    login => {
+        success => "{\"api_key\":\"9fbc5302-6002bea0-d38f8ace-0285a4ec\",\"ok\":true}",
+        fail    => "{\"reason\":\"authentication failed\",\"error\":\"login\"}",
+    },
+    execute => {
+        success => "{\"ok\":true,\"job_id\":\"a123\"}",
+        # XXX: check to see what an expected failure message really would look like
+        fail    => "{\"reason\":\"timeout\",\"error\":\"server\"}",
+    },
+    abort => {
+        success => "{}",
+        fail    => "{}",
+    },
+};
 
-# Successful login
-{
+sub _mock_server {
     my $lwp = Test::MockObject->new();
     $lwp->fake_module( 'LWP::UserAgent'=> (
         new => sub { $lwp },
     ));
+    return $lwp;
+}
+ 
+# Successful login
+{
+    my $lwp = _mock_server();
     
     $lwp->mock( get => sub {
         # Return a hand crafted HTTP::Response object
         my $response = HTTP::Response->new;
         $response->code(200);
-        $response->content($success);
+        $response->content($expected->{login}{success});
         return $response;
     });
 
     my $response = $client->login();
+    my $success_hash = decode_json($expected->{login}{success});
     ok($response->{ok}, 'login response ok');
+    ok(!$response->{error}, 'no error on success');
     is($response->{api_key}, $success_hash->{api_key}, 'api_key is correct');
 }
 
 # Server error
 {
-    my $lwp = Test::MockObject->new();
-    $lwp->fake_module( 'LWP::UserAgent'=> (
-        new => sub { $lwp },
-    ));
+    my $lwp = _mock_server();
     
     $lwp->mock( get => sub {
         # Return a hand crafted HTTP::Response object
@@ -62,20 +77,43 @@ my $fail_hash = decode_json($fail);
 
 # Failed login
 {
-    my $lwp = Test::MockObject->new();
-    $lwp->fake_module( 'LWP::UserAgent'=> (
-        new => sub { $lwp },
-    ));
+    my $lwp = _mock_server();
     
     $lwp->mock( get => sub {
         # Return a hand crafted HTTP::Response object
         my $response = HTTP::Response->new;
         $response->code(200);
-        $response->content($fail);
+        $response->content($expected->{login}{fail});
         return $response;
     });
 
     my $response = $client->login();
+    my $fail_hash = decode_json($expected->{login}{fail});
     ok($response->{reason}, 'error reason as expected');
     is($response->{error}, $fail_hash->{error}, 'error response as expected');
 }
+
+# Execute success
+{
+    my $lwp = _mock_server();
+    
+    $lwp->mock( post => sub {
+        my $response = HTTP::Response->new;
+        $response->code(200);
+        $response->content($expected->{execute}{success});
+        return $response;
+    });
+    
+    my $response = $client->execute( { region => 'california', url => '127.0.0.1', } );
+    my $exec_hash = decode_json($expected->{execute}{success});
+
+    ok($response->{ok}, 'execute response ok');
+    ok(!$response->{error}, 'no error on success');
+    is($response->{job_id}, $exec_hash->{job_id}, 'id is returned correctly');
+}
+
+# TODO: Execute failure
+
+# TODO: Abort
+
+# TODO: Status
