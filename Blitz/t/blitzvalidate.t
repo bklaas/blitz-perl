@@ -5,7 +5,7 @@ use warnings;
 use Blitz;
 use Blitz::Validate;
 use Data::Dump qw(dump);
-use Test::More tests => 23;
+use Test::More tests => 42;
 
 my $error_response = 'Invalid parameters';
 
@@ -162,5 +162,109 @@ my $error_response = 'Invalid parameters';
 }
 
 # XXX: cookies and headers
+{
+    for my $key ('cookies', 'headers') {
+        my $validate_with_bad_format = {
+            url => 'http://foo.com',
+            $key => 'a string instead of an array',
+        };
+        my $correct_params = {
+            url => 'http://foo.com',
+        };
+        $correct_params->{key} = [ 'cookie1=foo', 'cookie2=blah'] if $key eq 'cookies';
+        $correct_params->{key} = [ 'h1: v1', 'h2: v2'] if $key eq 'headers';
+        my ($valid, $response) = Blitz::Validate::validate($correct_params);
+        ok($valid, "Correct $key pushes no error");
+        ($valid, $response) = Blitz::Validate::validate($validate_with_bad_format);
+        is($response->{error}, $error_response, 'Badly formated $key returns invalid');
+    }
+}
 
-# XXX: variables
+# variables
+{
+    my $correct = {
+        list => {
+            url => 'http://foo.com',
+            variables => {
+                var1 => { type => 'list', entries => [ 3, 'foo', 'bar', 333]},
+                var2 => { type => 'list', entries => [ 5, 'ffff', 'bing', 123]},
+            }
+        },
+        number => {
+            url => 'http://foo.com',
+            variables => {
+                var1 => { type => 'number', min => -100, max => 100 },
+                var2 => { type => 'number', min => 100, max => 1000 },
+            }
+        },
+        alpha => {
+            url => 'http://foo.com',
+            variables => {
+                var1 => { type => 'alpha', min => 4, max => 10},
+                var2 => { type => 'alpha', min => 1, max => 30},
+            }
+        },
+        udid => {
+            url => 'http://foo.com',
+            variables => {
+                var1 => { type => 'udid'},
+            }
+        },
+        mixed => {
+            url => 'http://foo.com',
+            variables => {
+                var1 => { type => 'list', entries => [ 3, 'foo', 'bar', 333]},
+                var2 => { type => 'number', min => 100, max => 1000 },
+                var3 => { type => 'alpha', min => 4, max => 10},
+                var4 => { type => 'udid'},
+            },
+        },
+    };
+    
+    my $bad = {
+        list => {
+            url => 'http://foo.com',
+            variables => {
+                var1 => { type => 'list', min => 100, max => 200},
+            }
+        },
+        number1 => {
+            url => 'http://foo.com',
+            variables => {
+                var1 => { type => 'number', entries => [1, 2, 4] },
+            }
+        },
+        number2 => {
+            url => 'http://foo.com',
+            variables => {
+                var1 => { type => 'number', min => 1.1, max => 1.3 },
+            }
+        },
+        alpha => {
+            url => 'http://foo.com',
+            variables => {
+                var1 => { type => 'alpha', min => 4},
+            }
+        },
+        mixed => {
+            url => 'http://foo.com',
+            variables => {
+                var1 => { type => 'list', min => 1, max => 2},
+                var2 => { type => 'number', min => 100, max => 1000 },
+                var3 => { type => 'alpha', min => 4, max => 10},
+                var4 => { type => 'udid'},
+            },
+        },
+    };
+    for my $type ( keys %$correct) {
+        my ($valid, $response) = Blitz::Validate::validate($correct->{$type});
+        ok($valid, "Correct variable entry pushes no error");
+    }
+    for my $type ( keys %$bad) {
+        my ($valid, $response) = Blitz::Validate::validate($bad->{$type});
+        ok(!$valid, "Bad variable entry is not valid");
+        is($response->{error}, $error_response, "Bad variable entry pushes an error");
+    }
+
+}
+

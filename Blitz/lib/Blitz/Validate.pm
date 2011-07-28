@@ -85,8 +85,6 @@ sub validate {
         }
     }
     
-    # XXX: request
-    
     # XXX: variables
     # variables must be a hash
     # key/val pairs of hash must be name, followed by a hash of params
@@ -94,6 +92,45 @@ sub validate {
     # if list, must have an entries key with a value of an array
     # if alpha, must have keys min and max, with integer values
     # if number, must have keys min and max, with integer values
+    if ($options->{variables}) {
+        if (! _is_hash($options->{variables})) {
+            push @$reasons, "values to variables not given as a hash: " . $options->{variables};
+        }
+        else {
+            for my $key (keys %{$options->{variables}}) {
+                if (! _is_hash($options->{variables}{$key})) {
+                    push @$reasons, 
+                        "values to variables key $key not given as a hash: " . 
+                        $options->{variables}{$key};
+                }
+                else {
+                    my $type = $options->{variables}{$key}{type};
+                    if (! $type) {
+                        push @$reasons, "all variables must have a type definition";
+                    }
+                    elsif (! $type =~ /^(list|alpha|number|udid)$/) {
+                        push @$reasons, "all variables must have type of list, alpha, number, or udid";
+                    }
+                    else {
+                        if ($type eq 'list') {
+                            if (! $options->{variables}{$key}{entries} ||
+                                ! _is_array($options->{variables}{$key}{entries}) ) {
+                                    push @$reasons, "all variables of type list need an array of values";
+                            }
+                        }
+                        elsif ($type eq 'number' || $type eq 'alpha') {
+                            for my $int ('min', 'max') {
+                                if (! $options->{variables}{$key}{$int} ||
+                                    $options->{variables}{$key}{$int} !~ /^\-*\d+$/g) {
+                                        push @$reasons, "$int value must be an integer for $key";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     if ($reasons->[0]) {
         my $reason = join(', ', @$reasons);
