@@ -14,7 +14,7 @@ my $blitz = Blitz->new({
     api_key  => '12121212-aaaaaaaa-bbbbbbbb-01010101',
 });
 
-my $client = Blitz::API->client($blitz->{credentials});
+my $client = $blitz->get_client;
 my $expected = {
     login => {
         success => "{\"api_key\":\"34343434-abcabcab-99999999-abacab12\",\"ok\":true}",
@@ -104,7 +104,7 @@ sub _mock_server {
         return $response;
     });
     
-    my $response = $client->execute( { region => 'california', url => '127.0.0.1', } );
+    my $response = $client->start_job( { region => 'california', url => '127.0.0.1', } );
     my $exec_hash = decode_json($expected->{execute}{success});
 
     ok($response->{ok}, 'execute response ok');

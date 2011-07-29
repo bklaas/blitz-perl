@@ -13,6 +13,8 @@ my $obj = Blitz->new();
 create_object_ok();
 test_defaults();
 test_setters_and_getters();
+new_blitz();
+new_rush();
 
 done_testing();
 
@@ -43,4 +45,15 @@ sub test_setters_and_getters {
     is( $obj->host, $set->{host}, 'Setting and getting host works');
     is( $obj->api_key, $set->{api_key}, 'Setting and getting api_key works');
 
+}
+
+sub new_blitz {
+    my $sprint = Blitz::Sprint->new({});
+
+    is( $sprint->{test_type}, 'sprint', "Sprint object correctly identified as Sprint");
+}
+
+sub new_rush {
+    my $rush = Blitz::Rush->new({});
+    is ( $rush->{test_type}, 'rush', "Rush object correctly identified as Rush");
 }

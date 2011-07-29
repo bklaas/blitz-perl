@@ -6,6 +6,7 @@ use warnings;
 use LWP;
 use Data::Dump qw(dump);
 use JSON::XS;
+use MIME::Base64;
 
 =head1 NAME
 
@@ -18,6 +19,7 @@ sub client {
     my $creds = shift;
     my $self = {
         credentials => $creds,
+        job_id => undef,
     };
     bless $self;
     return $self;
@@ -46,19 +48,37 @@ sub _http_get {
     return $response;
 }
 
+=head2 _decode_result
+
+Decode the JSON result object from Blitz
+Decode base64 response in content areas of request and response
+
+=cut
 
 sub _decode_response {
     my $self = shift;
     my $response = shift;
-    my $result = {};
+    my $return = {};
     if ( $response->{_rc} != 200 ) {
-        $result->{error} = 'server';
-        $result->{cause} = $response->code();
+        $return->{error} = 'server';
+        $return->{cause} = $response->code();
     }
     else {
-        $result = decode_json($response->{_content});
+        $return = decode_json($response->{_content});
+        for my $key ('request', 'response') {
+            if ($return->{result}) {
+                if ($return->{result}{$key} && $return->{result}{$key}{content}) {
+                    $return->{result}{$key}{content} = decode_base64($return->{result}{$key}{content});    
+                }    
+            }
+        }
     }
-    return $result;
+# XXX for DEBUG
+#    print STDERR "----\n";
+#    Data::Dump::dump($return);
+#    print STDERR "----\n";
+
+    return $return;
 }
 
 sub login {
@@ -74,13 +94,23 @@ sub login {
     return $result;
 }
 
-sub job_status {
+sub job_id {
     my $self = shift;
     my $job_id = shift;
-    my $closure = shift;
+    $self->{job_id} = $job_id if $job_id;
+    return $self->{job_id};
+}
+
+sub job_status {
+
+    my $self = shift;
+    my $job_id = $self->job_id;
+    my $closure = $self->{callback};
     
-    my $response = _http_get($self, '/api/1/jobs/' . $job_id . '/status');
-    my $result = _decode_json($response->{_content});
+    my $request = 'api/1/jobs' . $job_id . '/status';
+    my $response = _http_get($self, $request);
+    
+    my $result = _decode_response($self, $response);
 
     if ($closure) {
         &$closure($self, $result);
@@ -99,10 +129,10 @@ sub api_key {
     return $self->{credentials}{api_key};
 }
 
-sub execute {
+sub start_job {
     my $self = shift;
     my $data = shift;
-    my $closure = shift;
+    my $closure = $self->{callback};
     
     $data = encode_json($data);
     

@@ -140,7 +140,7 @@ sub port {
 
 =head2 authenticated
 
-# Have we been authenticated?
+Have we been authenticated?
 
     my $auth = $blitz->authenticated;
 
@@ -151,31 +151,35 @@ sub authenticated {
     return $self->{_authenticated};
 }
 
-=head2 client
+=head2 get_client
 
-# creates a Blitz::API->client object
+fetches the existing client object, or 
+creates a new Blitz::API->client object
 
-    my $client = $blitz->client;
+    my $client = $blitz->get_client;
     
 =cut
 
-sub client {
+sub get_client {
     my $self = shift;
-    my $client = Blitz::API->client($self->{credentials});
-    return $client;
+    if (! $self->{client}) {
+        my $client = Blitz::API->client($self->{credentials});
+        $self->{client} = $client;
+    }
+    return $self->{client};
 }
 
 sub _run {
     my ($self, $obj, $options, $callback) = @_;
     if ($self->{_authenticated}) {
         $obj->new(
-                $self->{credentials},
+                $self,
                 $options,
                 $callback
             )->execute();
     }
     else {
-        my $client = $self->client;
+        my $client = $self->get_client;
         $client->login(
             sub { 
                 my $self = shift;
@@ -184,7 +188,7 @@ sub _run {
                     $self->{_authenticated} = 1;
                     $self->{credentials}{api_key} = $result->{api_key};
                     $obj->new(
-                        $self->{credentials},
+                        $self,
                         $options, 
                         $callback
                         )->execute();

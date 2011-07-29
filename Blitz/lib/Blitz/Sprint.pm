@@ -23,7 +23,7 @@ sub new {
     my $class = shift;
     
     my $return = $class->SUPER::new(@_);
-    
+    $return->{test_type} = 'sprint';
     return $return;
 }
 

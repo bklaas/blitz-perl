@@ -12,6 +12,7 @@ Blitz::Validate - Perl module for assisting with the validation of calls to Blit
 
 sub validate {
     my $options = shift;
+    my $test_type = shift;
     my $reasons = [];
 
     # url
@@ -23,13 +24,16 @@ sub validate {
     }
 
     # pattern
-    if ($options->{pattern}) {
+    if ($options->{pattern} && $test_type eq 'rush') {
         if (!$options->{pattern}{iterations} || ! _is_integer($options->{pattern}{iterations}) ) {
             push @$reasons, "Pattern iterations not given or not an integer";
         }
         if (! $options->{pattern}{intervals} || ! _is_array($options->{pattern}{intervals}) ) {
             push @$reasons, "Intervals is not an array";
         }
+    }
+    elsif ($options->{pattern} && $test_type eq 'sprint') {
+        push @$reasons, 'Pattern is not a valid options for sprints';
     }
 
     # region
