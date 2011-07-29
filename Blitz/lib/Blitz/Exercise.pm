@@ -44,41 +44,43 @@ sub blitzObj {
 
 sub execute {
     my $self = shift;
-    my $client = $self->blitzObj->client();
+    my $blitz = $self->blitzObj();
+    my $client = Blitz::get_client($self->blitzObj());
     
-    print STDERR "-------------------\n";
-    Data::Dump::dump($self->blitzObj);
-    print STDERR "-------------------\n";
     my ($valid, $result) = Blitz::Validate::validate($self->{options});
     if (!$valid) {
         &{$self->{callback}}($result, $result->{error});
-        exit 0;
     }
     else {
         # send execute request to host
-        my $response = $client->start_job();
-        
-        if ($response->{_id}) {
-            my $job_id = $client->job_id($response->{_id});
+
+        my $response = $client->start_job($self->{options}, $self->{callback});
+
+        if ($response->{job_id}) {
+            my $job_id = $client->job_id($response->{job_id});
             # wait 2 secs, then get status
             until ($client->{job_status} eq 'completed' or 
                     $client->{job_status} eq 'fail') {
                 sleep 2;
+                
                 $response = $client->job_status();
                 my $error = 0;
                 if ($response->{error}) {
                     $error = $response->{error};
                 }
                 elsif (         
-                    $response->{response} && 
-                    $response->{response}{result} && 
-                    $response->{response}{result}{error}
+                    $response->{result} && 
+                    $response->{result}{error}
                 ) {
-                    $error = $response->{response}{result}{error};
+                    $error = $response->{result}{error};
                 }
                 if ($error) {
                     $client->{job_status} = 'fail';
-                    &{$self->{callback}}($response, $response->{error});
+                    &{$self->{callback}}($response, $error);
+                }
+                else {
+                    $client->{job_status} = $response->{job_status};
+                    &{$self->{callback}}($response, $error);
                 }
             }
         }

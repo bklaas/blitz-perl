@@ -112,8 +112,3 @@ sub _mock_server {
     is($response->{job_id}, $exec_hash->{job_id}, 'id is returned correctly');
 }
 
-# TODO: Execute failure
-
-# TODO: Abort
-
-# TODO: Status

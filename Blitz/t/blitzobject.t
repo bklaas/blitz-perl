@@ -2,11 +2,12 @@
 
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 13;
 use Blitz;
 use Scalar::Util qw(blessed);
 
 use Data::Dump qw(dump);
+
 
 my $obj = Blitz->new();
 
@@ -15,8 +16,6 @@ test_defaults();
 test_setters_and_getters();
 new_blitz();
 new_rush();
-
-done_testing();
 
 sub create_object_ok {
     is( blessed($obj), 'Blitz', 'Creating a new object OK');
@@ -48,12 +47,14 @@ sub test_setters_and_getters {
 }
 
 sub new_blitz {
-    my $sprint = Blitz::Sprint->new({});
+    my $sprint = Blitz::Sprint->new( $obj, { options => { pattern => 'foo'}});
 
     is( $sprint->{test_type}, 'sprint', "Sprint object correctly identified as Sprint");
+    ok( ! $sprint->{options}{pattern}, "Pattern is stripped from options sent to Sprint");
 }
 
 sub new_rush {
-    my $rush = Blitz::Rush->new({});
+    my $rush = Blitz::Rush->new( $obj, { pattern => 'foo'});
     is ( $rush->{test_type}, 'rush', "Rush object correctly identified as Rush");
+    ok( $rush->{options}{pattern}, "Pattern is not stripped from options sent to Rush");
 }

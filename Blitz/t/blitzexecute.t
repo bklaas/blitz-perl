@@ -6,7 +6,7 @@ use Blitz;
 use JSON::XS;
 use MIME::Base64;
 
-use Test::More;
+use Test::More tests => 11;
 use Test::MockObject;
 
 my $blitz = Blitz->new({ 
@@ -108,7 +108,3 @@ sub _mock_server_response {
     is($response->{result}{response}{content}, 'content', 'response content was base64 encoded and decoded');
 
 }
-
-# job complete success
-
-done_testing();

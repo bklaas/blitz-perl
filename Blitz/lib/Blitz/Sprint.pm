@@ -23,6 +23,9 @@ sub new {
     my $class = shift;
     
     my $return = $class->SUPER::new(@_);
+    if ($return->{options} && $return->{options}{pattern}) {
+        delete($return->{options}{pattern});
+    }
     $return->{test_type} = 'sprint';
     return $return;
 }

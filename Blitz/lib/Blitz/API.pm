@@ -20,6 +20,7 @@ sub client {
     my $self = {
         credentials => $creds,
         job_id => undef,
+        job_status => 'idle',
     };
     bless $self;
     return $self;
@@ -31,12 +32,14 @@ sub _make_url {
     my $url = "http://" . $self->{credentials}{host}; # fix for https later?
     $url .= ":$self->{credentials}{port}" if $self->{credentials}{port} != 80;
     $url .= $path if $path;
+    print STDERR "$url\n";
     return $url;
 }
 
 sub _http_get {
     my $self = shift;
     my $path = shift;
+
     my $browser = LWP::UserAgent->new;
     my $url = _make_url($self, $path);
     my $response = $browser->get($url,
@@ -84,7 +87,8 @@ sub _decode_response {
 sub login {
     my $self = shift;
     my $closure = shift;
-    
+    print STDERR "\nLOGIN: \n\n";
+    Data::Dump::dump($self);    
     my $response = _http_get($self, '/login/api');
     my $result = _decode_response($self, $response);
 
@@ -104,10 +108,14 @@ sub job_id {
 sub job_status {
 
     my $self = shift;
+    print STDERR "\nJOB STATUS: \n\n";
+    Data::Dump::dump($self);
     my $job_id = $self->job_id;
     my $closure = $self->{callback};
-    
-    my $request = 'api/1/jobs' . $job_id . '/status';
+    print STDERR "\nJOB STATUS: \n\n";
+    Data::Dump::dump($self);
+
+    my $request = '/api/1/jobs/' . $job_id . '/status';
     my $response = _http_get($self, $request);
     
     my $result = _decode_response($self, $response);
@@ -115,6 +123,9 @@ sub job_status {
     if ($closure) {
         &$closure($self, $result);
     }
+
+    print STDERR "\nJOB STATUS RETURN\n\n";
+    Data::Dump::dump($result);
     return $result;
 }
 
@@ -133,7 +144,7 @@ sub start_job {
     my $self = shift;
     my $data = shift;
     my $closure = $self->{callback};
-    
+    Data::Dump::dump($data);
     $data = encode_json($data);
     
     my $browser = LWP::UserAgent->new;
@@ -146,36 +157,19 @@ sub start_job {
         'content-length' => length($data),
         Content          => $data,
     );
-
+    print STDERR "\nJOB START REQUEST: \n\n";
+    Data::Dump::dump($data);
     my $result = _decode_response($self, $response);
-
+    print STDERR "\nSTART JOB: \n\n";
+    Data::Dump::dump($self);
+    print STDERR "\nSTART JOB RETURN\n\n";
+    Data::Dump::dump($result);
+    
     if ($closure) {
         &$closure($self, $result);
     }
     return $result;
 }
 
-sub abort {
-    my $self = shift;
-    my $job_id = shift;
-    my $closure = shift;
-    
-    my $browser = LWP::UserAgent->new;
-    
-    my $path = '/api/1/jobs/' . $job_id . '/abort';
-    my $url = _make_url($self, $path);
-    
-    # Create a request
-    my $req = HTTP::Request->new(PUT => $url);
-    
-    # Pass request to the user agent and get a response back
-    my $response = $browser->request($req);
-    my $result = _decode_response($response);
-
-    if ($closure) {
-        &$closure($self, $result);
-    }
-    return $result;
-}
 
 return 1;

@@ -172,11 +172,12 @@ sub get_client {
 sub _run {
     my ($self, $obj, $options, $callback) = @_;
     if ($self->{_authenticated}) {
-        $obj->new(
+        my $exercise = $obj->new(
                 $self,
                 $options,
                 $callback
-            )->execute();
+            );
+        $exercise->execute();
     }
     else {
         my $client = $self->get_client;
@@ -187,11 +188,12 @@ sub _run {
                 if ($result->{ok}) {
                     $self->{_authenticated} = 1;
                     $self->{credentials}{api_key} = $result->{api_key};
-                    $obj->new(
+                    my $exercise = $obj->new(
                         $self,
                         $options, 
                         $callback
-                        )->execute();
+                        );
+                    $exercise->execute();
                 }
                 else {
                     &$callback($result, $result->{error});
