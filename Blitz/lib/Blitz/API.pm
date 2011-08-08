@@ -4,8 +4,8 @@ use strict;
 use warnings;
 
 use LWP;
-use Data::Dump qw(dump);
-use JSON::XS;
+use Blitz;
+use JSON;
 use MIME::Base64;
 
 =head1 NAME
@@ -26,13 +26,22 @@ sub client {
     return $self;
 }
 
+sub status {
+    my $self = shift;
+    my $status = shift;
+    if ($status) {
+        $self->{job_status} = $status;
+    }
+    
+    return $self->{job_status};
+}
+
 sub _make_url {
     my $self = shift;
     my $path = shift;
     my $url = "http://" . $self->{credentials}{host}; # fix for https later?
     $url .= ":$self->{credentials}{port}" if $self->{credentials}{port} != 80;
     $url .= $path if $path;
-    print STDERR "$url\n";
     return $url;
 }
 
@@ -76,10 +85,6 @@ sub _decode_response {
             }
         }
     }
-# XXX for DEBUG
-#    print STDERR "----\n";
-#    Data::Dump::dump($return);
-#    print STDERR "----\n";
 
     return $return;
 }
@@ -87,8 +92,7 @@ sub _decode_response {
 sub login {
     my $self = shift;
     my $closure = shift;
-    print STDERR "\nLOGIN: \n\n";
-    Data::Dump::dump($self);    
+
     my $response = _http_get($self, '/login/api');
     my $result = _decode_response($self, $response);
 
@@ -108,24 +112,20 @@ sub job_id {
 sub job_status {
 
     my $self = shift;
-    print STDERR "\nJOB STATUS: \n\n";
-    Data::Dump::dump($self);
     my $job_id = $self->job_id;
     my $closure = $self->{callback};
-    print STDERR "\nJOB STATUS: \n\n";
-    Data::Dump::dump($self);
 
     my $request = '/api/1/jobs/' . $job_id . '/status';
     my $response = _http_get($self, $request);
     
     my $result = _decode_response($self, $response);
 
+    $self->status($result->{status});
+    
     if ($closure) {
         &$closure($self, $result);
     }
 
-    print STDERR "\nJOB STATUS RETURN\n\n";
-    Data::Dump::dump($result);
     return $result;
 }
 
@@ -144,26 +144,20 @@ sub start_job {
     my $self = shift;
     my $data = shift;
     my $closure = $self->{callback};
-    Data::Dump::dump($data);
-    $data = encode_json($data);
     
+    my $json = encode_json($data);
+        
     my $browser = LWP::UserAgent->new;
     my $url = _make_url($self, '/api/1/curl/execute');
-    
+
     my $response = $browser->post($url,
         'X-API-User'     => $self->{credentials}{username},
         'X-API-Key'      => $self->{credentials}{api_key},
         'X-API-Client'   => 'Perl',
-        'content-length' => length($data),
-        Content          => $data,
+        'content-length' => length($json),
+        Content          => $json,
     );
-    print STDERR "\nJOB START REQUEST: \n\n";
-    Data::Dump::dump($data);
     my $result = _decode_response($self, $response);
-    print STDERR "\nSTART JOB: \n\n";
-    Data::Dump::dump($self);
-    print STDERR "\nSTART JOB RETURN\n\n";
-    Data::Dump::dump($result);
     
     if ($closure) {
         &$closure($self, $result);

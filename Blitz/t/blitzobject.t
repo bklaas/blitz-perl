@@ -6,9 +6,6 @@ use Test::More tests => 13;
 use Blitz;
 use Scalar::Util qw(blessed);
 
-use Data::Dump qw(dump);
-
-
 my $obj = Blitz->new();
 
 create_object_ok();

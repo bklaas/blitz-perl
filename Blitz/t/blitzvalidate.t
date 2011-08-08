@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use Blitz;
 use Blitz::Validate;
-use Data::Dump qw(dump);
 use Test::More tests => 42;
 
 my $error_response = 'Invalid parameters';
@@ -101,7 +100,6 @@ my $error_response = 'Invalid parameters';
         'user-agent' => 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405',
     };
     my ($valid, $response) = Blitz::Validate::validate($correct_params);
-    Data::Dump::dump($response);
     ok($valid, "Correct user-agent pushes no error");
     ($valid, $response) = Blitz::Validate::validate($validate_with_bad_user_agent);
     is($response->{error}, $error_response, 'Badly formated user-agent returns invalid');

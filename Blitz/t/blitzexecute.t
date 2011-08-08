@@ -6,7 +6,7 @@ use Blitz;
 use JSON::XS;
 use MIME::Base64;
 
-use Test::More tests => 11;
+use Test::More tests => 12;
 use Test::MockObject;
 
 my $blitz = Blitz->new({ 
@@ -16,7 +16,7 @@ my $blitz = Blitz->new({
 
 my $start_job_error = {
     error => 'login',
-    reason => 'You need to be signed in',
+    reason => 'You need to be signed in!!',
 };
 
 my $start_job_success = {
@@ -26,8 +26,24 @@ my $start_job_success = {
     region => 'california',
 };
 
+my $integer_test = { 
+    url => 'http://falling-moon-908.heroku.com/iterate=#{iterate}',
+    variables => {
+        iterate => { type => 'number', min => 2, max => 4 },
+    },  
+    region => 'california',
+};
+
+my $integer_test_foo = {
+    url => 'http://foo.com',
+    variables => {
+        var1 => { type => 'number', min => 2, max => 5 },
+    },
+};
+
 my $start_job_error_json = encode_json($start_job_error);
 my $start_job_success_json = encode_json($start_job_success);
+my $integer_test_json = encode_json($integer_test);
 
 my $content = encode_base64('content');
 my $status = {
@@ -107,4 +123,12 @@ sub _mock_server_response {
     is($response->{result}{request}{content}, 'content', 'request content was base64 encoded and decoded');
     is($response->{result}{response}{content}, 'content', 'response content was base64 encoded and decoded');
 
+}
+
+# integer test
+{
+    my $lwp = _mock_server_response('post', $integer_test_json);
+    
+    my $response = $client->start_job($integer_test);
+    is_deeply($response, $integer_test, 'response and json are identical');
 }

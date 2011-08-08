@@ -28,6 +28,9 @@ sub validate {
         if (!$options->{pattern}{iterations} || ! _is_integer($options->{pattern}{iterations}) ) {
             push @$reasons, "Pattern iterations not given or not an integer";
         }
+        else {
+            $options->{pattern}{iterations} += 0;
+        }
         if (! $options->{pattern}{intervals} || ! _is_array($options->{pattern}{intervals}) ) {
             push @$reasons, "Intervals is not an array";
         }
@@ -127,6 +130,9 @@ sub validate {
                                 if (! $options->{variables}{$key}{$int} ||
                                     $options->{variables}{$key}{$int} !~ /^\-*\d+$/g) {
                                         push @$reasons, "$int value must be an integer for $key";
+                                }
+                                else {
+                                    $options->{variables}{$key}{$int} += 0;
                                 }
                             }
                         }

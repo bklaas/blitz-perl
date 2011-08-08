@@ -9,6 +9,7 @@ use Blitz::Validate;
 use MIME::Base64;
 use JSON::XS;
 use LWP;
+use Storable qw(dclone);
 
 =head1 NAME
 
@@ -47,7 +48,9 @@ sub execute {
     my $blitz = $self->blitzObj();
     my $client = Blitz::get_client($self->blitzObj());
     
-    my ($valid, $result) = Blitz::Validate::validate($self->{options});
+    my $clone = dclone($self->{options});
+    my ($valid, $result) = Blitz::Validate::validate($clone, $self->{test_type});
+    
     if (!$valid) {
         &{$self->{callback}}($result, $result->{error});
     }
@@ -58,12 +61,14 @@ sub execute {
 
         if ($response->{job_id}) {
             my $job_id = $client->job_id($response->{job_id});
+            my $status = $client->status;
             # wait 2 secs, then get status
-            until ($client->{job_status} eq 'completed' or 
-                    $client->{job_status} eq 'fail') {
+            until ($status eq 'completed' or 
+                    $status eq 'fail') {
                 sleep 2;
-                
-                $response = $client->job_status();
+                $response = $client->job_status;
+                $status = $client->status;
+
                 my $error = 0;
                 if ($response->{error}) {
                     $error = $response->{error};
@@ -75,13 +80,14 @@ sub execute {
                     $error = $response->{result}{error};
                 }
                 if ($error) {
-                    $client->{job_status} = 'fail';
+                    $status = 'fail';
                     &{$self->{callback}}($response, $error);
                 }
                 else {
-                    $client->{job_status} = $response->{job_status};
+                    $status = $response->{status};
                     &{$self->{callback}}($response, $error);
                 }
+                $client->status($status);
             }
         }
         else {
