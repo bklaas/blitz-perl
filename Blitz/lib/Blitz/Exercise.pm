@@ -20,7 +20,10 @@ Blitz::Exercise - Superclass for Sprint and Rush modules
 
 =head2 new
 
-Create a blitz exercise object, which returns a closure with execute and abort methods
+Create a blitz exercise object for executing sprints or rushes
+
+Required parameters are a set of options to run the test, and a callback 
+closure to execute after each communication with the blitz.io servers
 
 =cut
 
@@ -38,10 +41,22 @@ sub new {
     return $self;
 }
 
+=head2 blitzObj
+
+Returns the blitzObj for a given exercise
+
+=cut
+
 sub blitzObj {
     my $self = shift;
     return $self->{blitzObj};
 }
+
+=head2 execute
+
+Executes an exercise (a sprint or a rush)
+
+=cut
 
 sub execute {
     my $self = shift;

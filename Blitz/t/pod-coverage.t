@@ -1,6 +1,7 @@
 use strict;
 use warnings;
-use Test::More skip_all => 'TODO- deal with POD coverage at the end';
+#use Test::More skip_all => 'TODO- deal with POD coverage at the end';
+use Test::More;
 
 # Ensure a recent version of Test::Pod::Coverage
 my $min_tpc = 1.08;

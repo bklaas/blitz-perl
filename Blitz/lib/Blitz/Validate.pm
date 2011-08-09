@@ -10,6 +10,16 @@ Blitz::Validate - Perl module for assisting with the validation of calls to Blit
 
 =cut
 
+=head2 validate
+
+Takes a hash reference of options to be sent to the blitz.io servers
+and validates its content. Called before any tests are executed.
+
+Detailed API docs for communicating with the blitz servers can be found here:
+https://github.com/mudynamics/blitz-app/wiki/API-Docs
+
+=cut
+
 sub validate {
     my $options = shift;
     my $test_type = shift;

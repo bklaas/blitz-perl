@@ -14,6 +14,18 @@ Blitz::API - Perl module for API access to Blitz
 
 =cut
 
+=head1 SUBROUTINES/METHODS
+
+=head2 client
+
+Create a blitz client object for executing sprints or rushes
+
+Required parameters are credentials (email address and api-key)
+
+See http://blitz.io for information regarding the api key.
+
+=cut
+
 sub client {
     my $this = shift;
     my $creds = shift;
@@ -25,6 +37,12 @@ sub client {
     bless $self;
     return $self;
 }
+
+=head2 status
+
+status is a get/set method for the current status of a running exercise
+
+=cut
 
 sub status {
     my $self = shift;
@@ -60,10 +78,10 @@ sub _http_get {
     return $response;
 }
 
-=head2 _decode_result
+=head2 _decode_response
 
-Decode the JSON result object from Blitz
-Decode base64 response in content areas of request and response
+Decodes the JSON result object from Blitz
+Decodes base64 response in content areas of request and response
 
 =cut
 
@@ -89,6 +107,14 @@ sub _decode_response {
     return $return;
 }
 
+=head2 login
+
+Sends the RESTful login request to blitz.io servers
+When correctly executed, response contains a second api key that maintains
+authentication permission for running tests.
+
+=cut
+
 sub login {
     my $self = shift;
     my $closure = shift;
@@ -102,12 +128,25 @@ sub login {
     return $result;
 }
 
+=head2 job_id
+
+Get/set method for the job_id attached to a given client object
+
+=cut
+
 sub job_id {
     my $self = shift;
     my $job_id = shift;
     $self->{job_id} = $job_id if $job_id;
     return $self->{job_id};
 }
+
+=head2 job_status
+
+Sends RESTful request for job status of a given (known) job_id
+Sets status of the job in the client object after response is returned
+
+=cut
 
 sub job_status {
 
@@ -129,16 +168,14 @@ sub job_status {
     return $result;
 }
 
-# client object getter/setter for api_key
-# necessary?
-sub api_key {
-    my $self = shift;
-    my $api_key = shift;
-    if ($api_key) {
-        $self->{credentials}{api_key} = $api_key;
-    }
-    return $self->{credentials}{api_key};
-}
+=head2 start_job
+
+Executes an exercise (sprint or rush) on blitz.io
+
+When this method runs successfully, job_id is returned and
+the progress of the job can be queried with job_status()
+
+=cut
 
 sub start_job {
     my $self = shift;
