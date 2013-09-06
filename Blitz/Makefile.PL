@@ -18,6 +18,11 @@ WriteMakefile(
         'LWP' => 0,
         'Regexp::Common' => 0,
     },
+    META_MERGE          => {
+        resources => {
+            repository => 'https://github.com/bklaas/blitz-perl',
+        },
+    },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Blitz-*' },
 );
